@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADME Predictor — Molecular Property Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface-2: #1a2234;
+            --border: #1e2d45;
+            --text: #e2e8f0;
+            --text-muted: #7a8ba8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --green: #22c55e;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            padding: 48px 0 32px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            background: var(--accent-glow);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 6px 14px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+        }
+
+        .badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        h1 {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        /* Main panel */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .panel-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .panel-body {
+            padding: 24px;
+        }
+
+        /* Input area */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .smiles-input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-family: var(--mono);
+            font-size: 15px;
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .smiles-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .smiles-input::placeholder {
+            color: #3d4f6a;
+        }
+
+        .predict-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .predict-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Quick picks */
+        .quick-picks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quick-picks span {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-right: 4px;
+            line-height: 32px;
+        }
+
+        .pick-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pick-btn:hover {
+            background: var(--accent-glow);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--accent);
+        }
+
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .results.visible { display: block; }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .result-grid { grid-template-columns: 1fr; }
+            .input-group { flex-direction: column; }
+            h1 { font-size: 28px; }
+        }
+
+        .result-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .result-card.highlight {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, var(--bg), rgba(59, 130, 246, 0.05));
+        }
+
+        .result-label {
+            font-size: 11px;
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: var(--mono);
+        }
+
+        .result-unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+
+        .result-bar {
+            margin-top: 12px;
+            height: 4px;
+            background: var(--surface-2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .result-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Descriptor table */
+        .desc-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .desc-table th {
+            font-family: var(--mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .desc-table td {
+            padding: 10px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(30, 45, 69, 0.5);
+        }
+
+        .desc-table td:last-child {
+            font-family: var(--mono);
+            text-align: right;
+            color: var(--accent);
+        }
+
+        .desc-table tr:last-child td { border-bottom: none; }
+
+        .lipinski-pass {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .lipinski-pass.yes {
+            color: var(--green);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .lipinski-pass.no {
+            color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .lipinski-pass.warn {
+            color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        /* Molecule drawing */
+        .mol-canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* Loading */
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Info section */
+        .info-section {
+            padding: 48px 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 700px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+
+        .info-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 32px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        /* Note banner */
+        .note {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 13px;
+            color: #d4a854;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .note strong { color: var(--amber); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="badge">ML × Pharmacokinetics</div>
+        <h1>ADME Property Predictor</h1>
+        <p class="subtitle">
+            Enter a SMILES string to predict lipophilicity (logD) and view
+            molecular descriptors. Built with RDKit, scikit-learn, and ChemBERTa.
+        </p>
+    </header>
+
+    <div class="note">
+        <strong>Demo mode:</strong> This is a client-side simulation using RDKit.js molecular descriptors
+        and heuristic estimation. The full model runs server-side — see the
+        <a href="https://github.com/YOUR_USERNAME/adme-predictor" style="color: var(--amber);">GitHub repo</a>
+        for the trained models and notebooks.
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div class="dot"></div>
+            Molecule Input
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input
+                    type="text"
+                    class="smiles-input"
+                    id="smilesInput"
+                    placeholder="Enter SMILES string, e.g. CC(=O)OC1=CC=CC=C1C(=O)O"
+                    spellcheck="false"
+                    autocomplete="off"
+                />
+                <button class="predict-btn" id="predictBtn" onclick="predict()">
+                    Predict
+                </button>
+            </div>
+            <div class="quick-picks">
+                <span>Try:</span>
+                <button class="pick-btn" onclick="setSmiles('CC(=O)OC1=CC=CC=C1C(=O)O', 'Aspirin')">Aspirin</button>
+                <button class="pick-btn" onclick="setSmiles('CC(=O)Nc1ccc(O)cc1', 'Acetaminophen')">Acetaminophen</button>
+                <button class="pick-btn" onclick="setSmiles('CC12CCC3C(CCC4=CC(=O)CCC34C)C1CCC2O', 'Testosterone')">Testosterone</button>
+                <button class="pick-btn" onclick="setSmiles('CN1C=NC2=C1C(=O)N(C(=O)N2C)C', 'Caffeine')">Caffeine</button>
+                <button class="pick-btn" onclick="setSmiles('c1ccc2c(c1)cc1ccc3cccc4ccc2c1c34', 'Pyrene')">Pyrene</button>
+                <button class="pick-btn" onclick="setSmiles('CC(C)Cc1ccc(cc1)C(C)C(=O)O', 'Ibuprofen')">Ibuprofen</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="results" id="results">
+        <div class="result-grid">
+            <div class="result-card highlight">
+                <div class="result-label">Predicted logD (Lipophilicity)</div>
+                <div class="result-value" id="logdValue">—</div>
+                <div class="result-bar">
+                    <div class="result-bar-fill" id="logdBar"
+                         style="width: 0%; background: linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Drug-likeness (Lipinski)</div>
+                <div id="lipinskiResult" style="margin-top: 8px;"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="dot"></div>
+                Molecular Descriptors
+            </div>
+            <div class="panel-body" style="padding: 0;">
+                <table class="desc-table" id="descTable">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Description</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="descBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>What is SMILES?</h3>
+                <p>SMILES is a text notation for representing molecular structures.
+                   For example, "O" is water, "CC" is ethane, and "c1ccccc1" is benzene.</p>
+            </div>
+            <div class="info-card">
+                <h3>What is logD?</h3>
+                <p>logD measures lipophilicity — how well a drug dissolves in fats vs water
+                   at physiological pH. It affects absorption, distribution, and metabolism.</p>
+            </div>
+            <div class="info-card">
+                <h3>Lipinski's Rules</h3>
+                <p>The "Rule of Five" predicts oral drug bioavailability based on molecular weight,
+                   logP, hydrogen bond donors, and acceptors.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Built as a learning project &mdash;
+        <a href="https://github.com/YOUR_USERNAME/adme-predictor">View on GitHub</a>
+    </footer>
+</div>
+
+<script src="https://unpkg.com/@rdkit/rdkit@2023.9.4/dist/RDKit_minimal.js"></script>
+
+<script>
+let RDKitModule = null;
+
+// Initialize RDKit.js
+window.initRDKitModule().then(mod => {
+    RDKitModule = mod;
+    console.log('RDKit.js loaded');
+});
+
+const DESCRIPTORS = [
+    { key: 'mw',       name: 'Molecular Weight',     unit: 'g/mol',  desc: 'Sum of atomic weights' },
+    { key: 'logp',     name: 'Calculated logP',       unit: '',       desc: 'Wildman-Crippen partition coefficient' },
+    { key: 'tpsa',     name: 'TPSA',                  unit: 'Å²',    desc: 'Topological polar surface area' },
+    { key: 'hbd',      name: 'H-Bond Donors',         unit: '',       desc: 'NH + OH count' },
+    { key: 'hba',      name: 'H-Bond Acceptors',      unit: '',       desc: 'N + O count' },
+    { key: 'rotatable',name: 'Rotatable Bonds',        unit: '',       desc: 'Freely rotating bonds' },
+    { key: 'rings',    name: 'Ring Count',             unit: '',       desc: 'Total ring systems' },
+    { key: 'heavy',    name: 'Heavy Atoms',            unit: '',       desc: 'Non-hydrogen atoms' },
+    { key: 'fsp3',     name: 'Fraction sp3',           unit: '',       desc: 'Fraction of sp3-hybridized carbons' },
+];
+
+function setSmiles(smiles, name) {
+    document.getElementById('smilesInput').value = smiles;
+    predict();
+}
+
+function predict() {
+    const smiles = document.getElementById('smilesInput').value.trim();
+    if (!smiles) return;
+
+    if (!RDKitModule) {
+        alert('RDKit is still loading — please try again in a moment.');
+        return;
+    }
+
+    // Validate SMILES
+    let mol;
+    try {
+        mol = RDKitModule.get_mol(smiles);
+        if (!mol || !mol.is_valid()) {
+            alert('Invalid SMILES string. Please check the input.');
+            if (mol) mol.delete();
+            return;
+        }
+    } catch (e) {
+        alert('Invalid SMILES string. Please check the input.');
+        return;
+    }
+
+    // Get descriptors from RDKit
+    const descJson = JSON.parse(mol.get_descriptors());
+
+    const descriptors = {
+        mw: descJson.exactmw || descJson.amw || 0,
+        logp: descJson.CrippenClogP || 0,
+        tpsa: descJson.tpsa || 0,
+        hbd: descJson.NumHBD || 0,
+        hba: descJson.NumHBA || 0,
+        rotatable: descJson.NumRotatableBonds || 0,
+        rings: descJson.NumRings || 0,
+        heavy: descJson.NumHeavyAtoms || 0,
+        fsp3: descJson.FractionCSP3 || 0,
+    };
+
+    // Heuristic logD estimation (client-side approximation)
+    // Real model runs server-side; this gives a reasonable demo
+    let logD = descriptors.logp;
+    // Adjust for polar surface area (high TPSA → lower logD)
+    logD -= descriptors.tpsa * 0.005;
+    // Adjust for molecular size
+    logD += (descriptors.heavy - 20) * 0.02;
+    logD = Math.round(logD * 100) / 100;
+
+    // Display results
+    document.getElementById('results').classList.add('visible');
+
+    // logD display
+    const logdEl = document.getElementById('logdValue');
+    logdEl.textContent = logD.toFixed(2);
+    logdEl.style.color = logD >= 0 && logD <= 3 ? 'var(--green)' :
+                         (logD >= -1 && logD <= 5 ? 'var(--amber)' : 'var(--red)');
+
+    // logD bar (map -2..6 to 0..100%)
+    const barPct = Math.max(0, Math.min(100, ((logD + 2) / 8) * 100));
+    document.getElementById('logdBar').style.width = barPct + '%';
+
+    // Lipinski evaluation
+    const lipinski = {
+        mw: descriptors.mw <= 500,
+        logp: descriptors.logp <= 5,
+        hbd: descriptors.hbd <= 5,
+        hba: descriptors.hba <= 10,
+    };
+    const violations = Object.values(lipinski).filter(v => !v).length;
+
+    const lipEl = document.getElementById('lipinskiResult');
+    const statusClass = violations === 0 ? 'yes' : (violations <= 1 ? 'warn' : 'no');
+    const statusText = violations === 0 ? '✓ Pass' : (violations <= 1 ? `⚠ ${violations} violation` : `✗ ${violations} violations`);
+
+    lipEl.innerHTML = `
+        <div class="lipinski-pass ${statusClass}" style="font-size: 20px; padding: 8px 16px; margin-bottom: 12px;">
+            ${statusText}
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+            MW ≤ 500: <span style="color: ${lipinski.mw ? 'var(--green)' : 'var(--red)'}">${descriptors.mw.toFixed(1)}</span> &nbsp;
+            logP ≤ 5: <span style="color: ${lipinski.logp ? 'var(--green)' : 'var(--red)'}">${descriptors.logp.toFixed(2)}</span><br>
+            HBD ≤ 5: <span style="color: ${lipinski.hbd ? 'var(--green)' : 'var(--red)'}">${descriptors.hbd}</span> &nbsp;
+            HBA ≤ 10: <span style="color: ${lipinski.hba ? 'var(--green)' : 'var(--red)'}">${descriptors.hba}</span>
+        </div>
+    `;
+
+    // Descriptors table
+    const tbody = document.getElementById('descBody');
+    tbody.innerHTML = DESCRIPTORS.map(d => `
+        <tr>
+            <td style="font-weight: 500;">${d.name}</td>
+            <td style="color: var(--text-muted); font-size: 13px;">${d.desc}</td>
+            <td>${typeof descriptors[d.key] === 'number' ?
+                (Number.isInteger(descriptors[d.key]) ? descriptors[d.key] : descriptors[d.key].toFixed(3)) :
+                descriptors[d.key]}${d.unit ? ' <span style=\"color:var(--text-muted);font-size:11px\">' + d.unit + '</span>' : ''}</td>
+        </tr>
+    `).join('');
+
+    mol.delete();
+}
+
+// Predict on Enter key
+document.getElementById('smilesInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') predict();
+});
+</script>
+
+</body>
+</html>
