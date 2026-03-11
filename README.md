@@ -30,7 +30,7 @@ This project takes an incremental approach — building from classical ML baseli
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/adme-predictor.git
+git clone https://github.com/Nicholas-Adrogue/adme-predictor.git
 cd adme-predictor
 pip install -r requirements.txt
 ```
