@@ -103,6 +103,11 @@ All datasets are sourced from [Therapeutics Data Commons (TDC)](https://tdcommon
 - **Visualization:** matplotlib, seaborn
 - **Demo:** HTML/CSS/JS (static, hostable anywhere)
 
+## Important Background Information
+
+- See [DESCRIPTORS.md](DESCRIPTORS.md) for a detailed explanation of each molecular property.
+
+
 ## References
 
 - Chithrananda, S., Grand, G., & Ramsundar, B. (2020). [ChemBERTa: Large-Scale Self-Supervised Pretraining for Molecular Property Prediction](https://arxiv.org/abs/2010.09885)
