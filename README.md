@@ -107,6 +107,11 @@ All datasets are sourced from [Therapeutics Data Commons (TDC)](https://tdcommon
 
 - See [DESCRIPTORS.md](DESCRIPTORS.md) for a detailed explanation of each molecular property.
 
+## Acknowledgments
+
+- Datasets from [Therapeutics Data Commons](https://tdcommons.ai/) (Huang et al., 2021)
+- Pretrained model from [ChemBERTa](https://arxiv.org/abs/2010.09885) (Chithrananda et al., 2020)
+- Project scaffolding and template code developed with assistance from [Claude](https://claude.ai) (Anthropic)
 
 ## References
 
