@@ -21,8 +21,8 @@ This project takes an incremental approach — building from classical ML baseli
 | Phase | Approach | Features | Status |
 |-------|----------|----------|--------|
 | 1 | Random Forest / XGBoost | Morgan fingerprints | ✅ Baseline |
-| 2 | Feature engineering | Multiple descriptor types | 🔄 In progress |
-| 3 | ChemBERTa fine-tuning | Learned SMILES representations | ⬚ Planned |
+| 2 | Feature engineering | Multiple descriptor types | ✅ Features Examined |
+| 3 | ChemBERTa fine-tuning | Learned SMILES representations | 🔄 In progress |
 | 4 | Demo & deployment | Interactive web UI | ⬚ Planned |
 
 ## Quick Start
