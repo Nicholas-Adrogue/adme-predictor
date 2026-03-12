@@ -4,7 +4,7 @@
 
 Given a drug molecule as a [SMILES string](https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system), this project predicts key ADME (Absorption, Distribution, Metabolism, Excretion) properties — starting with lipophilicity (logD).
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-In_Progress-yellow)
 
