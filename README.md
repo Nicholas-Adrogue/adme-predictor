@@ -63,7 +63,7 @@ adme-predictor/
 │   ├── train.py         # Training pipeline
 │   ├── evaluate.py      # Metrics & visualization
 │   └── predict.py       # Inference on new molecules
-├── demo/
+├── docs/
 │   └── index.html       # Interactive web demo
 ├── models/              # Saved model artifacts
 ├── data/                # Cached datasets
