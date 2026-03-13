@@ -4,7 +4,7 @@
 
 Given a drug molecule as a [SMILES string](https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system), this project predicts key ADME (Absorption, Distribution, Metabolism, Excretion) properties — starting with lipophilicity (logD).
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-In_Progress-yellow)
 
@@ -21,8 +21,8 @@ This project takes an incremental approach — building from classical ML baseli
 | Phase | Approach | Features | Status |
 |-------|----------|----------|--------|
 | 1 | Random Forest / XGBoost | Morgan fingerprints | ✅ Baseline |
-| 2 | Feature engineering | Multiple descriptor types | 🔄 In progress |
-| 3 | ChemBERTa fine-tuning | Learned SMILES representations | ⬚ Planned |
+| 2 | Feature engineering | Multiple descriptor types | ✅ Features Examined |
+| 3 | ChemBERTa fine-tuning | Learned SMILES representations | 🔄 In progress |
 | 4 | Demo & deployment | Interactive web UI | ⬚ Planned |
 
 ## Quick Start
@@ -107,6 +107,11 @@ All datasets are sourced from [Therapeutics Data Commons (TDC)](https://tdcommon
 
 - See [DESCRIPTORS.md](DESCRIPTORS.md) for a detailed explanation of each molecular property.
 
+## Acknowledgments
+
+- Datasets from [Therapeutics Data Commons](https://tdcommons.ai/) (Huang et al., 2021)
+- Pretrained model from [ChemBERTa](https://arxiv.org/abs/2010.09885) (Chithrananda et al., 2020)
+- Project scaffolding and template code developed with assistance from [Claude](https://claude.ai) (Anthropic)
 
 ## References
 
