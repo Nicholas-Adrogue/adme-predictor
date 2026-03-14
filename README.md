@@ -80,11 +80,11 @@ All datasets are sourced from [Therapeutics Data Commons (TDC)](https://tdcommon
 
 ## Results
 
-| Model | Dataset | RMSE | R² | MAE |
+| Model | Dataset | Test RMSE | Test R² | MAE |
 |-------|---------|------|----|-----|
-| Random Forest | Lipophilicity | — | — | — |
-| XGBoost | Lipophilicity | — | — | — |
-| ChemBERTa | Lipophilicity | — | — | — |
+| Random Forest | Lipophilicity | 0.7640 | 0.5856 | — |
+| XGBoost | Lipophilicity | 0.6457 | 0.7040 | — |
+| ChemBERTa | Lipophilicity | 0.7841 | 0.5636 | — |
 
 *Results will be updated as each phase is completed.*
 
