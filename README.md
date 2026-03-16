@@ -14,6 +14,9 @@ Given a drug molecule as a [SMILES string](https://en.wikipedia.org/wiki/Simplif
 
 ADME properties determine whether a drug candidate will actually work in the human body. Poor pharmacokinetics is one of the leading causes of drug failure in clinical trials. Predicting these properties computationally saves time and money in early-stage drug discovery.
 
+## Key Finding
+XGBoost with combined molecular features (Morgan fingerprints + physicochemical descriptors) achieved the best performance, outperforming a fine-tuned ChemBERTa transformer on this dataset.
+
 ## Project Overview
 
 This project takes an incremental approach — building from classical ML baselines to modern transformer-based models:
