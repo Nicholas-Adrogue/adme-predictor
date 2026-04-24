@@ -8,7 +8,7 @@ Given a drug molecule as a [SMILES string](https://en.wikipedia.org/wiki/Simplif
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
 
-**[Try the Live Demo →](https://Nicholas-Adrogue-adme-predictor.hf.space)**
+**[Try the Live Demo →](https://YOUR_USERNAME-adme-predictor.hf.space)**
 
 ---
 
@@ -51,7 +51,7 @@ XGBoost with combined features (Morgan fingerprints + physicochemical descriptor
 ### Installation
 
 ```bash
-git clone https://github.com/Nicholas-Adrogue/adme-predictor.git
+git clone https://github.com/YOUR_USERNAME/adme-predictor.git
 cd adme-predictor
 pip install -r requirements.txt
 ```
@@ -78,6 +78,7 @@ python src/train.py --dataset lipophilicity --model xgb --features combined
 adme-predictor/
 ├── README.md
 ├── DESCRIPTORS.md          # Molecular descriptors reference
+├── LICENSE
 ├── requirements.txt
 ├── notebooks/
 │   ├── 01_baseline_model.ipynb      # EDA + Random Forest baseline
@@ -92,11 +93,9 @@ adme-predictor/
 ├── huggingface/
 │   ├── app.py           # Gradio app for HuggingFace Spaces
 │   └── requirements.txt # Space dependencies
-├── docs/
-│   └── index.html       # Static demo page (GitHub Pages)
-├── models/              # Saved model artifacts
-├── data/                # Cached datasets
-└── assets/              # Plots and images
+├── assets/              # Plots and images from all phases
+├── models/              # Saved model artifacts (.pkl, .pt)
+└── data/                # Cached datasets (downloaded via TDC)
 ```
 
 ## Dataset
